@@ -1,95 +1,82 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"; 
 
-export default function Home() {
+import React, { useState } from 'react';
+import { Header } from './components/Headers'; 
+import { ProductList } from './components/ProductList';
+import { Cart } from './components/Cart';
+
+const Home = () => {
+  const [cartItems, setCartItems] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [countProducts, setCountProducts] = useState(0);
+
+  const addToCart = (product) => {
+    const exist = cartItems.find(item => item.id === product.id);
+    if (exist) {
+      setCartItems(
+        cartItems.map(item =>
+          item.id === product.id ? { ...exist, quantity: exist.quantity + 1 } : item
+        )
+      );
+    } else {
+      setCartItems([...cartItems, { ...product, quantity: 1 }]);
+    }
+    setTotal(total + product.price);
+    setCountProducts(countProducts + 1); 
+  };
+
+  const removeFromCart = (product) => {
+    const exist = cartItems.find(item => item.id === product.id);
+    if (exist.quantity === 1) {
+      setCartItems(cartItems.filter(item => item.id !== product.id));
+    } else {
+      setCartItems(
+        cartItems.map(item =>
+          item.id === product.id ? { ...exist, quantity: exist.quantity - 1 } : item
+        )
+      );
+    }
+    setTotal(total - product.price);
+    setCountProducts(countProducts - 1); 
+  };
+
+  const updateQuantity = (product, quantity) => {
+    const exist = cartItems.find(item => item.id === product.id);
+    const newQuantity = parseInt(quantity, 10);
+    if (newQuantity > 0) {
+      setCartItems(
+        cartItems.map(item =>
+          item.id === product.id ? { ...exist, quantity: newQuantity } : item
+        )
+      );
+      setTotal(total - exist.price * exist.quantity + exist.price * newQuantity);
+      setCountProducts(countProducts - exist.quantity + newQuantity);
+    } else {
+      removeFromCart(product);
+    }
+  };
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+    <div className="App">
+      <Header countProducts={countProducts} />
+      <div className="main-content">
+        <ProductList addToCart={addToCart} />
+        <Cart 
+          cartItems={cartItems} 
+          removeFromCart={removeFromCart} 
+          updateQuantity={updateQuantity} 
+          total={total} 
         />
       </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
 }
+
+export default Home;
+
+
+
+
+
+
+
